@@ -85,19 +85,22 @@ export default {
         element[0] = element[0]=='M'? 'Male': 'Female'
       })
       res_gender_medals = res_gender_medals.data
-      let males = res_gender_medals.filter(element => element.includes('Male'))
+      
       let females = res_gender_medals.filter(element => element.includes('Female'))
-    let male = [
-      "Male",
-      males.find(element => element.includes('Gold'))[2],
-      males.find(element => element.includes('Silver'))[2],
-      males.find(element => element.includes('Bronze'))[2],
-    ]
+      let males = res_gender_medals.filter(element => element.includes('Male'))
+      
+
     let female = [
       "Female",
       females.find(element => element.includes('Gold'))[2],
       females.find(element => element.includes('Silver'))[2],
       females.find(element => element.includes('Bronze'))[2],
+    ]
+    let male = [
+      "Male",
+      males.find(element => element.includes('Gold'))[2],
+      males.find(element => element.includes('Silver'))[2],
+      males.find(element => element.includes('Bronze'))[2],
     ]
     this.medalsGender = [male, female]
     },
