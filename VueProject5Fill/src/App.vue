@@ -9,13 +9,13 @@
       <Dropdown type="countries" @onInputChange="inputChangeCountry($event)"/>
       <Dropdown type="events" @onInputChange="inputChangeEvent($event)"/>
     </div>
-    <div class="flex flex-none gap-5 sm:flex-col xl:flex-row">
+    <div class="flex flex-none gap-3 sm:flex-col xl:flex-row">
       <DataTable v-if="currentCountry != undefined" 
-        className="p-4 mt-4 mb-4 border sm:w-2/5 lg:w-full max-w-[40%]" 
+        className="p-4 mt-4 mb-4 border sm:w-2/5 lg:w-full max-w-[50%]" 
         :data="medals"
         :columns="['Medaille', 'Anz']"
       />
-      <PlotComp v-if="medalsGender.length != 0" type="bar" :xValue="['Gold', 'Silber', 'Bronze']" :yValues="medalsGender" title="Male Female Medal"/>
+      <PlotComp v-if="medalsGender.length != 0" type="bar" :xValue="['Gold', 'Silber', 'Bronze']" :yValues="medalsGender" title="Male vs Female Medal"/>
     </div>
     <div class="height-part">
       <PlotComp v-if="renderPlot == true" type="scatter" :xValue="years" :yValues="heights" type_="height" title="Age-Height-AVG"/>
@@ -62,13 +62,13 @@ export default {
   methods: {
     async inputChangeCountry(e){
       this.currentCountry = e
-      await this.getMedalsCountSex()
+      await this.getMedalsCountPerSex()
       await this.getHeightData()
       await this.getWeightData()
       this.renderPlot = false
-      let response_medals = await axios.get(this.$hostname + `medals/${e}`)
+      let res_medals = await axios.get(this.$hostname + `medals/${e}`)
       
-      this.medals = response_medals.data
+      this.medals = res_medals.data
       this.renderPlot = true
     },
     async inputChangeEvent(e){
@@ -78,15 +78,15 @@ export default {
       await this.getMedalsEvent()
       this.renderPlot = true
     },
-    async getMedalsCountSex(){
-      let response_gender_medals = await axios.get(this.$hostname + 'count_by_sex')
+    async getMedalsCountPerSex(){
+      let res_gender_medals = await axios.get(this.$hostname + 'count_by_sex')
       
-    response_gender_medals.data.forEach(element => {
+    res_gender_medals.data.forEach(element => {
         element[0] = element[0]=='M'? 'Male': 'Female'
       })
-      response_gender_medals = response_gender_medals.data
-      let males = response_gender_medals.filter(element => element.includes('Male'))
-      let females = response_gender_medals.filter(element => element.includes('Female'))
+      res_gender_medals = res_gender_medals.data
+      let males = res_gender_medals.filter(element => element.includes('Male'))
+      let females = res_gender_medals.filter(element => element.includes('Female'))
     let male = [
       "Male",
       males.find(element => element.includes('Gold'))[2],
@@ -101,10 +101,11 @@ export default {
     ]
     this.medalsGender = [male, female]
     },
+    
     async getHeightData(){
-      let response = await axios.get(`${this.$hostname}height/${this.currentCountry}`)
-      response = this.$sortByKey(response.data, 'age')
-      console.log(response)
+      let res = await axios.get(`${this.$hostname}height/${this.currentCountry}`)
+      res = this.$sortByKey(res.data, 'age')
+      console.log(res)
       let handler = {
         get: function(target, name){
           return target.hasOwnProperty(name) ? target[name] : 0
@@ -114,7 +115,7 @@ export default {
       let height_obj = {}
       let age_count = new Proxy(age_obj, handler)
       let height_avg = new Proxy(height_obj, handler)
-      response.forEach(i => {
+      res.forEach(i => {
         age_count[i.age] += 1
         height_avg[i.age] += i.height
       })

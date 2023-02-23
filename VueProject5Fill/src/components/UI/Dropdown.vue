@@ -12,7 +12,7 @@
   export default {
       data() {
           return {
-              id: Math.floor(Math.random()*10000000),
+              id: Math.floor(Math.random()*100000),
               data: []
           }
       },
@@ -34,12 +34,12 @@
       },
       methods: {
           async getCountries(){
-              let response = await axios.get(this.$hostname + "regions")
-              return response.data
+              let res = await axios.get(this.$hostname + 'regions')
+              return res.data
           },
           async getEvents(){
-              let response = await axios.get(this.$hostname + "events")
-              return response.data
+              let res = await axios.get(this.$hostname + 'events')
+              return res.data
           },
           inputChange(){
               this.$emit("onInputChange", this.data[this.$refs[`dropdown-${this.id}`].selectedIndex-1])

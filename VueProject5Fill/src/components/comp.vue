@@ -22,7 +22,6 @@ export default{
       if(this.type_ != 'height'){
           let x = 0
           this.yValues.forEach(yValue=> {
-              console.log(yValue)
               let trace_name = yValue[0]
               yValue = yValue.slice(1)
               data.push({
@@ -46,11 +45,8 @@ export default{
               type: this.type,
           })
       }
-      
-      
       this.layout.title = this.title
       this.data = data
-      console.log(this.data)
   },
 }
 </script>

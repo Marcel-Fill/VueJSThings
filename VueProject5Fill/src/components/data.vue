@@ -9,9 +9,12 @@
 </template>
 
 <script>
+
+
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bs5'
 import axios from 'axios'
+
 DataTable.use(DataTablesLib)
     export default {
         components: {
