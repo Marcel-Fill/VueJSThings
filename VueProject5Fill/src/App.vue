@@ -10,7 +10,7 @@
       <Dropdown type="events" @onInputChange="inputChangeEvent($event)"/>
     </div>
     <div class="flex flex-none gap-3 sm:flex-col xl:flex-row">
-      <DataTable v-if="currentCountry != undefined" 
+      <DataTable v-if="currCountry != undefined" 
         className="p-4 mt-4 mb-4 border sm:w-2/5 lg:w-full max-w-[50%]" 
         :data="medalsComb"
         :columns="['Medaille', 'Anz']"
@@ -42,8 +42,8 @@ export default {
   },
   data() {
     return {
-      currentCountry: undefined,
-      currentEvent: undefined,
+      currCountry: undefined,
+      currEvent: undefined,
       medalsComb: [],
       medalsGender: [],
       renderAll: false,
@@ -60,8 +60,15 @@ export default {
     
   },
   methods: {
+    async inputChangeEvent(e){
+      this.currEvent = e
+      this.renderAll = false
+      await this.getHeight()
+      await this.getMedalsEvent()
+      this.renderAll = true
+    },
     async inputChangeCountry(e){
-      this.currentCountry = e
+      this.currCountry = e
       await this.getMedalsPerSex()
       await this.getHeight()
       await this.getWeight()
@@ -69,13 +76,6 @@ export default {
       let res_medals = await axios.get(this.$hostname + `medals/${e}`)
       
       this.medalsComb = res_medals.data
-      this.renderAll = true
-    },
-    async inputChangeEvent(e){
-      this.currentEvent = e
-      this.renderAll = false
-      await this.getHeight()
-      await this.getMedalsEvent()
       this.renderAll = true
     },
     async getMedalsPerSex(){
@@ -86,29 +86,45 @@ export default {
       })
       res_gender_medals = res_gender_medals.data
       
-      let females = res_gender_medals.filter(element => element.includes('Female'))
-      let males = res_gender_medals.filter(element => element.includes('Male'))
+      let multibleFemales = res_gender_medals.filter(element => element.includes('Female'))
+      let multibleMale = res_gender_medals.filter(element => element.includes('Male'))
       
 
     let female = [
       "Female",
-      females.find(element => element.includes('Gold'))[2],
-      females.find(element => element.includes('Silver'))[2],
-      females.find(element => element.includes('Bronze'))[2],
+      multibleFemales.find(element => element.includes('Gold'))[2],
+      multibleFemales.find(element => element.includes('Silver'))[2],
+      multibleFemales.find(element => element.includes('Bronze'))[2],
     ]
     let male = [
       "Male",
-      males.find(element => element.includes('Gold'))[2],
-      males.find(element => element.includes('Silver'))[2],
-      males.find(element => element.includes('Bronze'))[2],
+      multibleMale.find(element => element.includes('Gold'))[2],
+      multibleMale.find(element => element.includes('Silver'))[2],
+      multibleMale.find(element => element.includes('Bronze'))[2],
     ]
     this.medalsGender = [male, female]
     },
-    
+    async getWeight(){
+      let res = await axios.get(`${this.$hostname}weight/${this.currCountry}`)
+      let res1 = res.data
+      res1 = res1.sort((a, b) => {
+        return Object.values(a)[0] - Object.values(b)[0]
+      })
+      res1 = res1.slice(-5)
+      let xValues = []
+      let yValues = []
+      res1.forEach(e => {
+        xValues.push(Object.keys(e)[0])
+        yValues.push(Object.values(e)[0])
+      })
+      this.weight_avg = {
+        xValues: yValues,
+        yValues: xValues
+      }
+    },
     async getHeight(){
-      let res = await axios.get(`${this.$hostname}height/${this.currentCountry}`)
+      let res = await axios.get(`${this.$hostname}height/${this.currCountry}`)
       res = this.$sortByKey(res.data, 'age')
-      console.log(res)
       let handler = {
         get: function(target, name){
           return target.hasOwnProperty(name) ? target[name] : 0
@@ -131,28 +147,9 @@ export default {
       this.heights = Object.values(this.heights)
     },
     async getMedalsEvent(){
-      let result = await axios.get(`${this.$hostname}event/${this.currentEvent}`)
-      this.medalsEvent = result.data
-      console.log(this.medalsEvent)
+      let res = await axios.get(`${this.$hostname}event/${this.currEvent}`)
+      this.medalsEvent = res.data
     },
-    async getWeight(){
-      let result = await axios.get(`${this.$hostname}weight/${this.currentCountry}`)
-      let results = result.data
-      results = results.sort((a, b) => {
-        return Object.values(a)[0] - Object.values(b)[0]
-      })
-      results = results.slice(-5)
-      let xValues = []
-      let yValues = []
-      results.forEach(e => {
-        xValues.push(Object.keys(e)[0])
-        yValues.push(Object.values(e)[0])
-      })
-      this.weight_avg = {
-        xValues: yValues,
-        yValues: xValues
-      }
-    }
   }
 }
 </script>
@@ -162,6 +159,6 @@ export default {
   display: none;
 }
 </style>
-
+<!--Habe Tailwind eingebaut weil bootstrap nicht so wollte wie ich wollte :)-->
 <style src="./assets/tailwind.css"></style>
 <style src="./assets/bootstrap.css"></style>
