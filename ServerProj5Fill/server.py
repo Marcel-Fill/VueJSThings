@@ -120,10 +120,10 @@ def events_group_by_sex():
 
 @app.route('/height/<string:noc>')
 def get_height(noc):
-    result = AthleteEvents.query.filter(AthleteEvents.noc == noc)\
+    res = AthleteEvents.query.filter(AthleteEvents.noc == noc)\
     .filter(AthleteEvents.height != "NA")\
     .all()
-    return jsonify(result)
+    return jsonify(res)
 
 @app.route('/event/<string:event>')
 def get_team(event):
@@ -131,19 +131,21 @@ def get_team(event):
 
 @app.route('/weight/<string:noc>')
 def get_weight(noc):
-    result = db_session.query(AthleteEvents.weight, AthleteEvents.noc).filter(AthleteEvents.weight != 'NA').all()
-    result = pd.DataFrame.from_records(result, columns=['weight', 'noc'])
-    weight = result.groupby('noc')['weight'].mean()
+    res = db_session.query(AthleteEvents.weight, AthleteEvents.noc).filter(AthleteEvents.weight != 'NA').all()
+    res = pd.DataFrame.from_records(res, columns=['weight', 'noc'])
+    weight = res.groupby('noc')['weight'].mean()
     toReturn = []
-    for i in result['noc'].drop_duplicates():
+    for i in res['noc'].drop_duplicates():
         toReturn.append({i:weight[i]})
     return jsonify(toReturn)
 
 def get_team_by_events(event):
-    result = db_session.query(AthleteEvents.medal, func.count(AthleteEvents.medal)).filter(and_(AthleteEvents.medal != 'NA',AthleteEvents.event == event)).group_by(AthleteEvents.medal).all()
-    result = pd.DataFrame.from_records(result, columns=['medal', 'cnt'])
-    result = result.sort_values("medal")
-    return result.values.tolist()
+    res = db_session.query(AthleteEvents.medal, func.count(AthleteEvents.medal)).filter(and_(AthleteEvents.medal != 'NA',AthleteEvents.event == event)).group_by(AthleteEvents.medal).all()
+    res = pd.DataFrame.from_records(res, columns=['medal', 'cnt'])
+    res = res.sort_values("medal")
+    return res.values.tolist()
+
+
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):

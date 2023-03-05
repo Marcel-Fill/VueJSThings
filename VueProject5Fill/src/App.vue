@@ -12,19 +12,19 @@
     <div class="flex flex-none gap-3 sm:flex-col xl:flex-row">
       <DataTable v-if="currentCountry != undefined" 
         className="p-4 mt-4 mb-4 border sm:w-2/5 lg:w-full max-w-[50%]" 
-        :data="medals"
+        :data="medalsComb"
         :columns="['Medaille', 'Anz']"
       />
       <PlotComp v-if="medalsGender.length != 0" type="bar" :xValue="['Gold', 'Silber', 'Bronze']" :yValues="medalsGender" title="Male vs Female Medal"/>
     </div>
     <div class="height-part">
-      <PlotComp v-if="renderPlot == true" type="scatter" :xValue="years" :yValues="heights" type_="height" title="Age-Height-AVG"/>
+      <PlotComp v-if="renderAll == true" type="scatter" :xValue="years" :yValues="heights" type_="height" title="Age-Height-AVG"/>
     </div>
     <div class="height-part">
-      <PlotComp v-if="renderPlot == true" type="bar" :xValue="['Gold', 'Silber', 'Bronze']" :yValues="medalsEvent" title="Medal per Event"/>
+      <PlotComp v-if="renderAll == true" type="bar" :xValue="['Gold', 'Silber', 'Bronze']" :yValues="medalsEvent" title="Medal per Event"/>
     </div>
     <div class="height-part">
-      <PlotComp v-if="renderPlot == true" type="pie" :xValue="weight_avg.xValues" :yValues="weight_avg.yValues" title="Top 5 Weight Avg" type_="height"/>
+      <PlotComp v-if="renderAll == true" type="pie" :xValue="weight_avg.xValues" :yValues="weight_avg.yValues" title="Top 5 Weight Avg" type_="height"/>
     </div>
   </main>
 </template>
@@ -44,9 +44,9 @@ export default {
     return {
       currentCountry: undefined,
       currentEvent: undefined,
-      medals: [],
+      medalsComb: [],
       medalsGender: [],
-      renderPlot: false,
+      renderAll: false,
       years: [],
       heights: [],
       medalsEvent: [],
@@ -62,23 +62,23 @@ export default {
   methods: {
     async inputChangeCountry(e){
       this.currentCountry = e
-      await this.getMedalsCountPerSex()
-      await this.getHeightData()
-      await this.getWeightData()
-      this.renderPlot = false
+      await this.getMedalsPerSex()
+      await this.getHeight()
+      await this.getWeight()
+      this.renderAll = false
       let res_medals = await axios.get(this.$hostname + `medals/${e}`)
       
-      this.medals = res_medals.data
-      this.renderPlot = true
+      this.medalsComb = res_medals.data
+      this.renderAll = true
     },
     async inputChangeEvent(e){
       this.currentEvent = e
-      this.renderPlot = false
-      await this.getHeightData()
+      this.renderAll = false
+      await this.getHeight()
       await this.getMedalsEvent()
-      this.renderPlot = true
+      this.renderAll = true
     },
-    async getMedalsCountPerSex(){
+    async getMedalsPerSex(){
       let res_gender_medals = await axios.get(this.$hostname + 'count_by_sex')
       
     res_gender_medals.data.forEach(element => {
@@ -105,7 +105,7 @@ export default {
     this.medalsGender = [male, female]
     },
     
-    async getHeightData(){
+    async getHeight(){
       let res = await axios.get(`${this.$hostname}height/${this.currentCountry}`)
       res = this.$sortByKey(res.data, 'age')
       console.log(res)
@@ -135,7 +135,7 @@ export default {
       this.medalsEvent = result.data
       console.log(this.medalsEvent)
     },
-    async getWeightData(){
+    async getWeight(){
       let result = await axios.get(`${this.$hostname}weight/${this.currentCountry}`)
       let results = result.data
       results = results.sort((a, b) => {

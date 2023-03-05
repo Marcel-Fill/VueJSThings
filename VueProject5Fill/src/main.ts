@@ -3,10 +3,10 @@ import App from './App.vue'
 
 const app = createApp(App)
 
-function sortByKey(array, key) {
-    return array.sort(function(a, b) {
-        var x = a[key]; var y = b[key];
-        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+function sortByKey(arr, key) {
+    return arr.sort(function(i, j) {
+        var a = i[key]; var b = j[key];
+        return ((a < b) ? -1 : ((a > b) ? 1 : 0));
     });
 }
 
